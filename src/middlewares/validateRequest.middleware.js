@@ -1,4 +1,4 @@
-const { ApiError } = require('../utils/ApiError');
+const { ApiError } = require('../helpers/ApiError');
 
 const validateRequest = (schema) => async (req, res, next) => {
   const { error } = schema.validate(req.body);

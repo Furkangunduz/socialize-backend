@@ -1,5 +1,5 @@
-const { ApiResponse } = require('../utils/ApiResponse');
-const { asyncHandler } = require('../utils/asyncHandler');
+const { ApiResponse } = require('../helpers/ApiResponse.js');
+const { asyncHandler } = require('../helpers/asyncHandler.js');
 const { sendMail } = require('../services/email.service.js');
 
 const emailtest = asyncHandler(async (req, res) => {

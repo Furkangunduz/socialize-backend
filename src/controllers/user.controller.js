@@ -1,9 +1,11 @@
-const { ApiError } = require('../utils/ApiError.js');
-const { ApiResponse } = require('../utils/ApiResponse.js');
-const { asyncHandler } = require('../utils/asyncHandler.js');
+const { ApiError } = require('../helpers/ApiError.js');
+const { ApiResponse } = require('../helpers/ApiResponse.js');
+const { asyncHandler } = require('../helpers/asyncHandler.js');
 const { User } = require('../models/user.model.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { createOtp } = require('../helpers/Otp.js');
+const { sendMail } = require('../services/email.service.js');
 
 const register = asyncHandler(async function (req, res) {
   try {
@@ -50,7 +52,18 @@ const login = asyncHandler(async function (req, res) {
     const userWithoutPassword = user.toObject();
     delete userWithoutPassword.password;
 
-    res.status(200).json(new ApiResponse(200, { user: userWithoutPassword, token }, 'Login successful'));
+    const otp = await createOtp(userWithoutPassword);
+
+    if (!otp) {
+      return res.status(500).json(new ApiError(500, null, 'Could not generate OTP'));
+    }
+
+    sendMail({
+      to: userWithoutPassword.email,
+      subject: 'Your OTP',
+      text: `Your OTP is ${otp.otp}`,
+    });
+    res.status(200).json(new ApiResponse(200, null, 'OTP sent to email successfully'));
   } catch (error) {
     res.status(500).json(new ApiError(500, null, error.message));
   }
