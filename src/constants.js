@@ -1,3 +1,3 @@
-const DB_NAME = 'socialMedia';
+const DB_NAME = 'socialize';
 
 module.exports = { DB_NAME };
