@@ -12,7 +12,7 @@ const otpVerify = asyncHandler(async (req, res) => {
     return res.status(400).json(new ApiResponse(400, null, 'Invalid OTP'));
   }
 
-  const user = await User.findOne({ email: verifiedOtp.email });
+  const user = await User.findById(verifiedOtp.userId);
 
   if (!user) {
     return res.status(400).json(new ApiResponse(400, null, 'User not found'));
@@ -20,6 +20,10 @@ const otpVerify = asyncHandler(async (req, res) => {
 
   const userWithoutPassword = user.toObject();
   delete userWithoutPassword.password;
+
+  await Otp.deleteOne({
+    otp,
+  });
 
   res.status(200).json(new ApiResponse(200, { ...userWithoutPassword, token: verifiedOtp.token }, 'OTP verified successfully'));
 });

@@ -5,7 +5,7 @@ const { User } = require('../models/user.model.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { createOtp } = require('../helpers/otp.helper.js');
-const { sendMail } = require('../services/email.service.js');
+const { sendMail } = require('../helpers/email/sendEmail.js');
 
 const register = asyncHandler(async function (req, res) {
   try {
@@ -58,7 +58,7 @@ const login = asyncHandler(async function (req, res) {
       return res.status(500).json(new ApiError(500, null, 'Could not generate OTP'));
     }
 
-    await sendMail({
+    sendMail({
       to: userWithoutPassword.email,
       subject: 'Your OTP',
       text: `Your OTP is ${otp.otp}`,

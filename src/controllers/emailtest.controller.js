@@ -1,6 +1,6 @@
 const { ApiResponse } = require('../helpers/ApiResponse.js');
 const { asyncHandler } = require('../helpers/asyncHandler.js');
-const { sendMail } = require('../services/email.service.js');
+const { sendMail } = require('../helpers/email/sendEmail.js');
 
 const emailtest = asyncHandler(async (req, res) => {
   sendMail();
