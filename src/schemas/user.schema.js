@@ -25,4 +25,20 @@ const registerSchema = joi.object({
     .message('Password must be contain number and letters.'),
 });
 
-module.exports = { loginSchema, registerSchema };
+const requestPasswordResetSchema = joi.object({
+  email: joi.string().email().required(),
+});
+const resetPasswordSchema = joi.object({
+  password: joi
+    .string()
+    .required()
+    .min(6)
+    .max(20)
+    .trim()
+    .pattern(new RegExp('^(?=.*[a-zA-Z])(?=.*[0-9])'))
+    .message('Password must be contain number and letters.'),
+  token: joi.string().required(),
+  userId: joi.string().required(),
+});
+
+module.exports = { loginSchema, registerSchema, requestPasswordResetSchema, resetPasswordSchema };
