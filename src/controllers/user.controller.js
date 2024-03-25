@@ -8,7 +8,7 @@ const { ResetToken } = require('../models/resetToken.model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { log } = require('console');
+const { Otp } = require('../models/otp.model.js');
 
 const register = asyncHandler(async function (req, res) {
   try {
@@ -26,6 +26,23 @@ const register = asyncHandler(async function (req, res) {
 
     const user = new User({ username, email, password: hashedPassword });
     await user.save();
+
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+
+    const otp = await createOtp(userWithoutPassword);
+
+    if (!otp) {
+      return res.status(500).json(new ApiError(500, null, 'Could not generate OTP'));
+    }
+
+    const link = `${process.env.CLIENT_URL}/otp?otp=${otp.otp}&userId=${userWithoutPassword._id}`;
+
+    sendMail({
+      to: userWithoutPassword.email,
+      subject: 'Please Confirm Your Email Address',
+      text: `Hello ${userWithoutPassword.username}, click on this link to confirm your email address: ${link}`,
+    });
 
     res.status(200).json(new ApiResponse(200, null, 'Registration successful'));
   } catch (error) {
@@ -55,19 +72,34 @@ const login = asyncHandler(async function (req, res) {
     const userWithoutPassword = user.toObject();
     delete userWithoutPassword.password;
 
-    const otp = await createOtp(userWithoutPassword, token);
+    res.status(200).json(new ApiResponse(200, { ...userWithoutPassword, token }, 'OTP sent to email successfully'));
+  } catch (error) {
+    res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
 
-    if (!otp) {
-      return res.status(500).json(new ApiError(500, null, 'Could not generate OTP'));
+const verifyEmail = asyncHandler(async function (req, res) {
+  try {
+    const { otp } = req.body;
+
+    const verifiedOtp = await Otp.findOne({ otp });
+
+    if (!verifiedOtp) {
+      return res.status(400).json(new ApiResponse(400, null, 'Invalid OTP'));
     }
 
-    sendMail({
-      to: userWithoutPassword.email,
-      subject: 'Your OTP',
-      text: `Your OTP is ${otp.otp}`,
+    await User.findByIdAndUpdate(verifiedOtp.userId, { isEmailVerified: true });
+
+    const user = await User.findById(verifiedOtp.userId);
+
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+
+    await Otp.deleteOne({
+      otp,
     });
 
-    res.status(200).json(new ApiResponse(200, null, 'OTP sent to email successfully'));
+    res.status(200).json(new ApiResponse(200, { ...userWithoutPassword, token: verifiedOtp.token }, 'Email verified successfully'));
   } catch (error) {
     res.status(500).json(new ApiError(500, null, error.message));
   }
@@ -118,8 +150,6 @@ const resetPassword = asyncHandler(async function (req, res) {
 
     const resetToken = await ResetToken.findOne({ userId });
 
-    console.log(resetToken.token);
-
     if (!resetToken) {
       return res.status(400).json(new ApiError(400, null, 'Invalid or expired reset token'));
     }
@@ -155,4 +185,5 @@ module.exports = {
   login,
   requestPasswordReset,
   resetPassword,
+  verifyEmail,
 };

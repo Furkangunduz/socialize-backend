@@ -25,9 +25,14 @@ const registerSchema = joi.object({
     .message('Password must be contain number and letters.'),
 });
 
+const verifyEmailSchema = joi.object({
+  otp: joi.string().required(),
+});
+
 const requestPasswordResetSchema = joi.object({
   email: joi.string().email().required(),
 });
+
 const resetPasswordSchema = joi.object({
   password: joi
     .string()
@@ -41,4 +46,4 @@ const resetPasswordSchema = joi.object({
   userId: joi.string().required(),
 });
 
-module.exports = { loginSchema, registerSchema, requestPasswordResetSchema, resetPasswordSchema };
+module.exports = { loginSchema, registerSchema, verifyEmailSchema, requestPasswordResetSchema, resetPasswordSchema };

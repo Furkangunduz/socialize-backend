@@ -1,7 +1,7 @@
 const otpGenerator = require('otp-generator');
 const { Otp } = require('../models/otp.model.js');
 
-async function createOtp(user, token) {
+async function createOtp(user) {
   return new Promise(async (resolve, reject) => {
     try {
       const otp = otpGenerator.generate(5, {
@@ -13,13 +13,12 @@ async function createOtp(user, token) {
 
       if (existingOtp) {
         existingOtp.otp = otp;
-        existingOtp.token = token;
         await existingOtp.save();
 
         resolve(existingOtp);
       }
 
-      const newOtp = new Otp({ userId: user._id, otp, token });
+      const newOtp = new Otp({ userId: user._id, otp });
       await newOtp.save();
 
       resolve(newOtp);
