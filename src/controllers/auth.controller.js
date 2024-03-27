@@ -1,20 +1,31 @@
 const { ApiError } = require('../helpers/ApiError.js');
 const { ApiResponse } = require('../helpers/ApiResponse.js');
 const { asyncHandler } = require('../helpers/asyncHandler.js');
-const { User } = require('../models/user.model.js');
 const { createOtp } = require('../helpers/otp.helper.js');
 const { sendMail } = require('../helpers/email/sendEmail.js');
-const { ResetToken } = require('../models/resetToken.model');
+
+const { User } = require('../models/user.model.js');
+const { ResetToken } = require('../models/resetToken.model.js');
+const { Otp } = require('../models/otp.model.js');
+const { Token } = require('../models/token.model.js');
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { Otp } = require('../models/otp.model.js');
+
+/**
+ * @route POST /users/register
+ *
+ * @param {String} req.body.email - The email of the user.
+ * @param {String} req.body.username - The username of the user.
+ * @param {String} req.body.password - The password of the user.
+ */
 
 const register = asyncHandler(async function (req, res) {
   try {
     const { username, email, password } = req.body;
 
-    const hashedPassword = bcrypt.hash(password, process.env.SALT);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const existingUser = await User.findOne({
       $or: [{ username }, { email }],
@@ -50,6 +61,13 @@ const register = asyncHandler(async function (req, res) {
   }
 });
 
+/**
+ * @route POST /users/login
+ *
+ * @param {String} req.body.email - The email of the user.
+ * @param {String} req.body.password - The password of the user.
+ *
+ */
 const login = asyncHandler(async function (req, res) {
   try {
     const { email, password } = req.body;
@@ -65,19 +83,27 @@ const login = asyncHandler(async function (req, res) {
       return res.status(401).json(new ApiError(401, null, 'Password does not match'));
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.SECRET, {
+    const jwtToken = jwt.sign({ userId: user._id }, process.env.SECRET, {
       expiresIn: '1d',
     });
+
+    const token = new Token({ token: jwtToken, userId: user._id });
+    await token.save();
 
     const userWithoutPassword = user.toObject();
     delete userWithoutPassword.password;
 
-    res.status(200).json(new ApiResponse(200, { ...userWithoutPassword, token }, 'OTP sent to email successfully'));
+    res.status(200).json(new ApiResponse(200, { ...userWithoutPassword, token: jwt }, 'OTP sent to email successfully'));
   } catch (error) {
     res.status(500).json(new ApiError(500, null, error.message));
   }
 });
 
+/**
+ * @route POST /users/verify-email
+ *
+ * @param {String} req.body.otp - The OTP sent to the user's email.
+ */
 const verifyEmail = asyncHandler(async function (req, res) {
   try {
     const { otp } = req.body;
@@ -105,6 +131,11 @@ const verifyEmail = asyncHandler(async function (req, res) {
   }
 });
 
+/**
+ * @route POST /users/request-password-reset
+ *
+ * @param {String} req.body.email - The email of the user.
+ */
 const requestPasswordReset = asyncHandler(async function (req, res) {
   try {
     const { email } = req.body;
@@ -115,22 +146,24 @@ const requestPasswordReset = asyncHandler(async function (req, res) {
       return res.status(400).json(new ApiError(400, null, 'User does not exist'));
     }
 
-    let token = await ResetToken.findOne({ userId: user._id });
+    let existingToken = await ResetToken.findOne({ userId: user._id });
 
-    if (token) {
-      await token.deleteOne();
+    if (existingToken) {
+      await existingToken.deleteOne();
     }
 
-    let resetToken = crypto.randomBytes(32).toString('hex');
-    const hash = await bcrypt.hash(resetToken, Number(process.env.SALT));
+    const resetJwt = jwt.sign({ userId: user._id }, process.env.SECRET, {
+      expiresIn: '1h',
+    });
 
-    await new ResetToken({
+    const token = new ResetToken({
       userId: user._id,
-      token: hash,
+      token: resetJwt,
       createdAt: Date.now(),
-    }).save();
+    });
+    await token.save();
 
-    const link = `${process.env.CLIENT_URL}/passwordReset?token=${resetToken}&userId=${user._id}`;
+    const link = `${process.env.CLIENT_URL}/passwordReset?tokenId=${token._id}&userId=${user._id}`;
 
     sendMail({
       to: user.email,
@@ -144,27 +177,33 @@ const requestPasswordReset = asyncHandler(async function (req, res) {
   }
 });
 
+/**
+ *  @route POST /users/reset-password
+ *
+ * @param {String} req.body.token - The reset token.
+ * @param {String} req.body.password - The new password.
+ */
 const resetPassword = asyncHandler(async function (req, res) {
   try {
-    const { userId, token, password } = req.body;
+    const { tokenId, password } = req.body;
 
-    const resetToken = await ResetToken.findOne({ userId });
+    const resetToken = await ResetToken.findById(tokenId);
 
     if (!resetToken) {
       return res.status(400).json(new ApiError(400, null, 'Invalid or expired reset token'));
     }
 
-    const isValid = await bcrypt.compare(token, resetToken.token);
+    const isValid = jwt.verify(resetToken.token, process.env.SECRET);
 
     if (!isValid) {
       return res.status(400).json(new ApiError(400, null, 'Invalid or expired reset token'));
     }
 
-    const hashedPassword = await bcrypt.hash(password, Number(process.env.SALT));
+    const hashedPassword = await bcrypt.hash(password, Number(10));
 
-    await User.updateOne({ _id: userId }, { $set: { password: hashedPassword } }, { new: true });
+    await User.updateOne({ _id: resetToken.userId }, { $set: { password: hashedPassword } }, { new: true });
 
-    const user = await User.findById(userId);
+    const user = await User.findById(resetToken.userId);
 
     sendMail({
       to: user.email,
