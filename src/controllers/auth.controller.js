@@ -93,7 +93,33 @@ const login = asyncHandler(async function (req, res) {
     const userWithoutPassword = user.toObject();
     delete userWithoutPassword.password;
 
-    res.status(200).json(new ApiResponse(200, { ...userWithoutPassword, token: jwt }, 'OTP sent to email successfully'));
+    res.status(200).json(new ApiResponse(200, { ...userWithoutPassword, token: jwtToken }, 'OTP sent to email successfully'));
+  } catch (error) {
+    res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
+
+/**
+ * @route POST /users/me
+ *
+ */
+
+const me = asyncHandler(async function (req, res) {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    if (!token) return res.status(401).json(new ApiError(401, null, 'Token not provided'));
+
+    const decoded = jwt.verify(token, process.env.SECRET);
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return res.status(404).json(new ApiError(404, null, 'User not found'));
+    }
+
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+
+    res.status(200).json(new ApiResponse(200, userWithoutPassword, 'User found'));
   } catch (error) {
     res.status(500).json(new ApiError(500, null, error.message));
   }
@@ -222,6 +248,7 @@ const resetPassword = asyncHandler(async function (req, res) {
 module.exports = {
   register,
   login,
+  me,
   requestPasswordReset,
   resetPassword,
   verifyEmail,
