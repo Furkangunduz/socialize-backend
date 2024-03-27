@@ -42,8 +42,7 @@ const resetPasswordSchema = joi.object({
     .trim()
     .pattern(new RegExp('^(?=.*[a-zA-Z])(?=.*[0-9])'))
     .message('Password must be contain number and letters.'),
-  token: joi.string().required(),
-  userId: joi.string().required(),
+  tokenId: joi.string().required(),
 });
 
 module.exports = { loginSchema, registerSchema, verifyEmailSchema, requestPasswordResetSchema, resetPasswordSchema };

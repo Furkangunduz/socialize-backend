@@ -62,7 +62,7 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
-  const hash = bcrypt.hash(this.password, process.env.SALT);
+  const hash = bcrypt.hash(this.password, 10);
   this.password = hash;
   next();
 });
