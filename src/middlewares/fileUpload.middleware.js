@@ -2,6 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { ApiError } = require('../helpers/ApiError');
+const { createFileUrl } = require('../utils');
 
 const up_folder = path.join(__dirname, '../../assets/userFiles');
 
