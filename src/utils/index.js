@@ -5,3 +5,5 @@ const createFileUrl = (req, filename) => {
     throw new Error(error.message);
   }
 };
+
+module.exports = { createFileUrl };
