@@ -19,7 +19,7 @@ async function authenticate(req, res, next) {
       return res.status(404).json(new ApiError(404, null, 'User not found'));
     }
 
-    if (user.deletedAt !== null) {
+    if (!!user?.deletedAt) {
       return res.status(404).json(new ApiError(404, null, 'User not found'));
     }
 
