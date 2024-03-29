@@ -82,7 +82,7 @@ const login = asyncHandler(async function (req, res) {
       return res.status(401).json(new ApiError(401, null, 'Could not find user with that email'));
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await user.comparePassword(password, user.password);
 
     if (!passwordMatch) {
       return res.status(401).json(new ApiError(401, null, 'Password does not match'));

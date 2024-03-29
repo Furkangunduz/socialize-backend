@@ -61,6 +61,11 @@ const userSchema = new Schema(
   }
 );
 
+//compare password
+userSchema.methods.comparePassword = async function (password) {
+  return bcrypt.compare(password, this.password);
+};
+
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
