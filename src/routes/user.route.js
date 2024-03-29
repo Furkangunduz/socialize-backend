@@ -3,6 +3,7 @@ const { getUser, followUser, unfollowUser, updateProfile, deleteProfile } = requ
 const { verifyToken } = require('../middlewares/jwtVerify.middleware.js');
 const { validateRequest } = require('../middlewares/validateRequest.middleware.js');
 const { getUserSchema, followUserSchema, updateProfileSchema, deleteProfileSchema } = require('../schemas/user.schema.js');
+const { uploadSingleFile } = require('../middlewares/fileUpload.middleware');
 
 const router = Router();
 
@@ -12,7 +13,7 @@ router.post('/follow-user', verifyToken, validateRequest(followUserSchema), foll
 
 router.post('/unfollow-user', verifyToken, validateRequest(followUserSchema), unfollowUser);
 
-router.post('/update-profile', verifyToken, validateRequest(updateProfileSchema), updateProfile);
+router.post('/update-profile', verifyToken, validateRequest(updateProfileSchema), uploadSingleFile, updateProfile);
 
 router.post('/delete-profile', verifyToken, validateRequest(deleteProfileSchema), deleteProfile);
 

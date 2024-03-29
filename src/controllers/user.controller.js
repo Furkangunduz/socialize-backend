@@ -3,7 +3,6 @@ const { ApiResponse } = require('../helpers/ApiResponse');
 const { asyncHandler } = require('../helpers/asyncHandler');
 const { User } = require('../models/user.model');
 const { RelationShip } = require('../models/relationShip');
-
 /**
  * @route GET /users/get-user
  *  @param {string} req.query.userId - The user ID of requested user.
@@ -95,11 +94,10 @@ const unfollowUser = asyncHandler(async function (req, res) {
  */
 const updateProfile = asyncHandler(async function (req, res) {
   try {
-    const { username, email, avatar, bio, website, birthday } = req.body;
+    const { username, avatar, bio, website, birthday } = req.body;
 
     const updateData = {
       username,
-      email,
       bio,
       avatar,
       website,
@@ -111,7 +109,7 @@ const updateProfile = asyncHandler(async function (req, res) {
     const user = await User.findByIdAndUpdate(req.userId, updateData, { new: true });
 
     return res.status(200).json(new ApiResponse(200, user, 'Profile updated successfully'));
-  } catch {
+  } catch (error) {
     return res.status(500).json(new ApiError(500, null, error.message));
   }
 });
