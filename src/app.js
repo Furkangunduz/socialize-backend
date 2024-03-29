@@ -5,6 +5,8 @@ const morgan = require('morgan');
 
 const authRoute = require('./routes/auth.route.js');
 const userRoute = require('./routes/user.route.js');
+const postRoute = require('./routes/post.route.js');
+
 const { uploadFile } = require('./middlewares/fileUpload.middleware.js');
 
 const app = express();
@@ -24,5 +26,6 @@ app.use(uploadFile);
 
 app.use('/api/v1/auth', authRoute);
 app.use('/api/v1/users', userRoute);
+app.use('/api/v1/posts', postRoute);
 
 module.exports = { app };
