@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { ApiError } = require('../helpers/ApiError');
 
-async function verifyToken(req, res, next) {
+async function authenticate(req, res, next) {
   const token = req.headers.authorization.split(' ')[1];
   if (!token) return res.status(401).json(new ApiError(401, null, 'Token not provided'));
 
@@ -24,4 +24,4 @@ async function verifyToken(req, res, next) {
   }
 }
 
-module.exports = { verifyToken };
+module.exports = { authenticate };
