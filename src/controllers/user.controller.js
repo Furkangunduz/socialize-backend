@@ -139,7 +139,8 @@ const deleteProfile = asyncHandler(async function (req, res) {
       return res.status(400).json(new ApiError(400, null, 'Incorrect password'));
     }
 
-    await user.deleteOne();
+    user.deletedAt = new Date();
+    await user.save();
 
     return res.status(200).json(new ApiResponse(200, null, 'Profile deleted successfully'));
   } catch (error) {

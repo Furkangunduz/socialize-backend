@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { ApiError } = require('../helpers/ApiError');
+const { User } = require('../models/user.model');
 
 async function authenticate(req, res, next) {
   const token = req.headers.authorization.split(' ')[1];
@@ -10,6 +11,16 @@ async function authenticate(req, res, next) {
 
     if (!decoded) {
       return res.status(401).json(new ApiError(401, null, 'Invalid token'));
+    }
+
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return res.status(404).json(new ApiError(404, null, 'User not found'));
+    }
+
+    if (user.deletedAt !== null) {
+      return res.status(404).json(new ApiError(404, null, 'User not found'));
     }
 
     req.userId = decoded.userId;
