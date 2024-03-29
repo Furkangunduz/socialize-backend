@@ -37,6 +37,9 @@ const userSchema = new Schema(
     bio: {
       type: String,
     },
+    website: {
+      type: String,
+    },
     role: {
       type: String,
       enum: ['user', 'admin', 'mod'],
