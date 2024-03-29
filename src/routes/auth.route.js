@@ -15,6 +15,6 @@ router.post('/reset-password', validateRequest(resetPasswordSchema), resetPasswo
 
 router.post('/verify-email', validateRequest(verifyEmailSchema), verifyEmail);
 
-router.post('/me', me);
+router.get('/me', me);
 
 module.exports = router;
