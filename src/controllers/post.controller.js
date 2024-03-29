@@ -2,6 +2,7 @@ const { ApiError } = require('../helpers/ApiError');
 const { ApiResponse } = require('../helpers/ApiResponse');
 const { asyncHandler } = require('../helpers/asyncHandler');
 const { Post } = require('../models/post.model');
+const { createFileUrl } = require('../utils/index');
 
 /**
  * @route POST /posts/create-post
@@ -15,10 +16,15 @@ const createPost = asyncHandler(async function (req, res) {
     const { content, is_public } = req.body;
     const files = req.files;
 
+    let fileUrlsArray = [];
+
+    if (files.length !== 0) {
+      fileUrlsArray = files.map((file) => createFileUrl(req, file.filename));
+    }
     const newPost = new Post({
       user_id: req.userId,
       content,
-      files,
+      files: fileUrlsArray,
       is_public,
     });
 
