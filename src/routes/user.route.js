@@ -3,7 +3,6 @@ const { getUser, followUser, unfollowUser, updateProfile, deleteProfile } = requ
 const { authenticate } = require('../middlewares/authenticateUser.middleware.js');
 const { validateRequest } = require('../middlewares/validateRequest.middleware.js');
 const { getUserSchema, followUserSchema, updateProfileSchema, deleteProfileSchema } = require('../schemas/user.schema.js');
-const { uploadSingleFile } = require('../middlewares/fileUpload.middleware');
 
 const router = Router();
 
@@ -13,7 +12,7 @@ router.post('/follow-user', authenticate, validateRequest(followUserSchema), fol
 
 router.post('/unfollow-user', authenticate, validateRequest(followUserSchema), unfollowUser);
 
-router.put('/update-profile', authenticate, validateRequest(updateProfileSchema), uploadSingleFile, updateProfile);
+router.put('/update-profile', authenticate, validateRequest(updateProfileSchema), updateProfile);
 
 router.delete('/delete-profile', authenticate, validateRequest(deleteProfileSchema), deleteProfile);
 

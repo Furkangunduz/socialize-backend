@@ -32,7 +32,7 @@ const upload = multer({
   },
 });
 
-const uploadSingleFile = (req, res, next) => {
+const uploadFile = (req, res, next) => {
   upload.any()(req, res, function (err) {
     if (err) {
       return res.status(400).json(new ApiError(400, null, err.message));
@@ -55,4 +55,4 @@ const uploadSingleFile = (req, res, next) => {
   });
 };
 
-module.exports = { uploadSingleFile };
+module.exports = { uploadFile };
