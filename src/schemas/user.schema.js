@@ -4,4 +4,8 @@ const getUserSchema = joi.object({
   userId: joi.string().required(),
 });
 
-module.exports = { getUserSchema };
+const followUserSchema = joi.object({
+  followingUserId: joi.string().required(),
+});
+
+module.exports = { getUserSchema, followUserSchema };
