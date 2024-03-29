@@ -94,7 +94,8 @@ const unfollowUser = asyncHandler(async function (req, res) {
  */
 const updateProfile = asyncHandler(async function (req, res) {
   try {
-    const { username, avatar, bio, website, birthday } = req.body;
+    const { username, bio, website, birthday } = req.body;
+    const avatar = req?.fileurl ?? null;
 
     const updateData = {
       username,
