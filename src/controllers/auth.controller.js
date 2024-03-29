@@ -33,7 +33,7 @@ const register = asyncHandler(async function (req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const existingUser = await User.findOne({
-      $or: [{ username }, { email }],
+      $or: [{ email }],
     });
 
     if (existingUser) {

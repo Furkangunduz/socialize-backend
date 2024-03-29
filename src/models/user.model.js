@@ -37,6 +37,9 @@ const userSchema = new Schema(
     bio: {
       type: String,
     },
+    birthday: {
+      type: Date,
+    },
     website: {
       type: String,
     },

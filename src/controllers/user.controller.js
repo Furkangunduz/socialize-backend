@@ -84,4 +84,69 @@ const unfollowUser = asyncHandler(async function (req, res) {
   }
 });
 
-module.exports = { getUser, followUser, unfollowUser };
+/**
+ * @route POST /users/update-profile
+ * @param {string} req.body.username - The username of the user.
+ * @param {string} req.body.email - The bio of the user.
+ * @param {string} req.body.avatar - The profile picture of the user.
+ * @param {string} req.body.bio - The cover picture of the user.
+ * @param {string} req.body.website - The website of the user.
+ * @param {string} req.body.birthday - The birthday of the user.
+ */
+const updateProfile = asyncHandler(async function (req, res) {
+  try {
+    const { username, email, avatar, bio, website, birthday } = req.body;
+
+    const updateData = {
+      username,
+      email,
+      bio,
+      avatar,
+      website,
+      birthday,
+    };
+
+    Object.keys(updateData).forEach((key) => updateData[key] === undefined && delete updateData[key]);
+
+    const user = await User.findByIdAndUpdate(req.userId, updateData, { new: true });
+
+    return res.status(200).json(new ApiResponse(200, user, 'Profile updated successfully'));
+  } catch {
+    return res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
+
+/**
+ * @route POST /users/delete-profile
+ * @param {string} req.body.password - The password of the user.
+ * @param {string} req.body.confirmPassword - The confirmation password of the user.
+ */
+const deleteProfile = asyncHandler(async function (req, res) {
+  try {
+    const { password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+      return res.status(400).json(new ApiError(400, null, 'Passwords do not match'));
+    }
+
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json(new ApiError(404, null, 'User not found'));
+    }
+
+    const isPasswordMatch = await user.comparePassword(password);
+
+    if (!isPasswordMatch) {
+      return res.status(400).json(new ApiError(400, null, 'Incorrect password'));
+    }
+
+    await user.deleteOne();
+
+    return res.status(200).json(new ApiResponse(200, null, 'Profile deleted successfully'));
+  } catch (error) {
+    return res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
+
+module.exports = { getUser, followUser, unfollowUser, updateProfile, deleteProfile };
