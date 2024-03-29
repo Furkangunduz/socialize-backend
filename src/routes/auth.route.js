@@ -9,12 +9,12 @@ router.post('/register', validateRequest(registerSchema), register);
 
 router.post('/login', validateRequest(loginSchema), login);
 
-router.post('/me', me);
-
 router.post('/request-password-reset', validateRequest(requestPasswordResetSchema), requestPasswordReset);
 
 router.post('/reset-password', validateRequest(resetPasswordSchema), resetPassword);
 
 router.post('/verify-email', validateRequest(verifyEmailSchema), verifyEmail);
+
+router.post('/me', me);
 
 module.exports = router;
