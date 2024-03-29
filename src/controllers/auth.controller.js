@@ -19,11 +19,16 @@ const crypto = require('crypto');
  * @param {String} req.body.email - The email of the user.
  * @param {String} req.body.username - The username of the user.
  * @param {String} req.body.password - The password of the user.
+ * @param {String} req.body.confirmPassword - The password confirmation of the user.
  */
 
 const register = asyncHandler(async function (req, res) {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+      return res.status(400).json(new ApiError(400, null, 'Passwords do not match'));
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 

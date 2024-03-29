@@ -23,6 +23,7 @@ const registerSchema = joi.object({
     .trim()
     .pattern(new RegExp('^(?=.*[a-zA-Z])(?=.*[0-9])'))
     .message('Password must be contain number and letters.'),
+  passwordConfirmation: joi.any().equal(joi.ref('password')).required(),
 });
 
 const verifyEmailSchema = joi.object({
