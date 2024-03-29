@@ -13,8 +13,8 @@ router.post('/follow-user', authenticate, validateRequest(followUserSchema), fol
 
 router.post('/unfollow-user', authenticate, validateRequest(followUserSchema), unfollowUser);
 
-router.post('/update-profile', authenticate, validateRequest(updateProfileSchema), uploadSingleFile, updateProfile);
+router.put('/update-profile', authenticate, validateRequest(updateProfileSchema), uploadSingleFile, updateProfile);
 
-router.post('/delete-profile', authenticate, validateRequest(deleteProfileSchema), deleteProfile);
+router.delete('/delete-profile', authenticate, validateRequest(deleteProfileSchema), deleteProfile);
 
 module.exports = router;
