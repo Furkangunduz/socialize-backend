@@ -248,6 +248,11 @@ const addComment = asyncHandler(async function (req, res) {
   }
 });
 
+/**
+ * @route DELETE /posts/delete-comment
+ * @param {String} req.body.commentId - The ID of the comment.
+ */
+
 const deleteComment = asyncHandler(async function (req, res) {
   try {
     const { commentId } = req.body;
