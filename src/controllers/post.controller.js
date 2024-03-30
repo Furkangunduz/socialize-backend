@@ -128,4 +128,64 @@ const updatePost = asyncHandler(async function (req, res) {
   }
 });
 
-module.exports = { createPost, getPost, deletePost, updatePost };
+/**
+ * @route PUT /posts/like-post
+ *
+ * @param {String} req.body.postId - The ID of the post.
+ */
+
+const likePost = asyncHandler(async function (req, res) {
+  try {
+    const { postId } = req.body;
+
+    const likedPost = await Post.findOneAndUpdate(
+      {
+        _id: postId,
+        likes: { $ne: req.userId },
+      },
+      {
+        $addToSet: { likes: req.userId },
+      },
+      { new: true }
+    ).populate('user', 'username avatar');
+
+    if (!likedPost) {
+      return res.status(404).json(new ApiError(404, null, 'Post not found'));
+    }
+
+    return res.status(200).json(new ApiResponse(200, likedPost, 'Post liked successfully'));
+  } catch (error) {
+    return res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
+
+/**
+ * @route PUT /posts/unlike-post
+ * @param {String} req.body.postId - The ID of the post.
+ */
+const unlikePost = asyncHandler(async function (req, res) {
+  try {
+    const { postId } = req.body;
+
+    const unlikedPost = await Post.findOneAndUpdate(
+      {
+        _id: postId,
+        likes: req.userId,
+      },
+      {
+        $pull: { likes: req.userId },
+      },
+      { new: true }
+    ).populate('user', 'username avatar');
+
+    if (!unlikedPost) {
+      return res.status(404).json(new ApiError(404, null, 'Post not found'));
+    }
+
+    return res.status(200).json(new ApiResponse(200, unlikedPost, 'Post unliked successfully'));
+  } catch (error) {
+    return res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
+
+module.exports = { createPost, getPost, deletePost, updatePost, likePost, unlikePost };
