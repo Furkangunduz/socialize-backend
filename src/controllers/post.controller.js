@@ -57,4 +57,27 @@ const getPost = asyncHandler(async function (req, res) {
   }
 });
 
-module.exports = { createPost, getPost };
+/**
+ * @route DELETE /posts/delete-post
+ *
+ * @param {String} req.body.postId - The ID of the post.
+ */
+const deletePost = asyncHandler(async function (req, res) {
+  try {
+    const { postId } = req.body;
+
+    const post = await Post.findOne({ _id: postId, user_id: req.userId });
+
+    if (!post) {
+      return res.status(404).json(new ApiError(404, null, 'Post not found'));
+    }
+
+    const deletedPost = await Post.findByIdAndDelete(postId, { new: true });
+
+    return res.status(200).json(new ApiResponse(200, deletedPost, 'Post deleted successfully'));
+  } catch (error) {
+    return res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
+
+module.exports = { createPost, getPost, deletePost };

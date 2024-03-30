@@ -10,4 +10,8 @@ const getPostSchema = joi.object({
   postId: joi.string().required(),
 });
 
-module.exports = { createPostSchema, getPostSchema };
+const deletePostSchema = joi.object({
+  postId: joi.string().required(),
+});
+
+module.exports = { createPostSchema, getPostSchema, deletePostSchema };
