@@ -242,6 +242,8 @@ const addComment = asyncHandler(async function (req, res) {
     });
     await newComment.save();
 
+    await Post.findByIdAndUpdate(postId, { $addToSet: { comments: newComment._id } });
+
     return res.status(201).json(new ApiResponse(201, newComment, 'Comment added successfully'));
   } catch (error) {
     return res.status(500).json(new ApiError(500, null, error.message));

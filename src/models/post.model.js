@@ -19,6 +19,11 @@ const PostSchema = new Schema(
       default: [],
       ref: 'User',
     },
+    comments: {
+      type: [Schema.Types.ObjectId],
+      default: [],
+      ref: 'Comment',
+    },
     view_count: {
       type: Number,
       default: 0,
