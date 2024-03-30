@@ -80,4 +80,52 @@ const deletePost = asyncHandler(async function (req, res) {
   }
 });
 
-module.exports = { createPost, getPost, deletePost };
+/**
+ * @route PUT /posts/update-post
+ *
+ * @param {String} req.body.postId - The ID of the post.
+ * @param {String} req.body.content - The content of the post.
+ * @param {Boolean} req.body.is_public - The visibility of the post.
+ * @param {Array} req.files - The files attached to the post.
+ */
+
+const updatePost = asyncHandler(async function (req, res) {
+  try {
+    const { postId, content, is_public } = req.body;
+    const files = req.files;
+
+    const post = await Post.findOne({ _id: postId, user_id: req.userId });
+
+    if (!post) {
+      return res.status(404).json(new ApiError(404, null, 'Post not found'));
+    }
+
+    let fileUrlsArray = [];
+
+    if (files.length !== 0) {
+      fileUrlsArray = files.map((file) => createFileUrl(req, file.filename));
+    }
+
+    const updateData = {
+      content,
+      is_public,
+      files: fileUrlsArray,
+    };
+
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      {
+        content,
+        files: fileUrlsArray,
+        is_public,
+      },
+      { new: true }
+    );
+
+    return res.status(200).json(new ApiResponse(200, updatedPost, 'Post updated successfully'));
+  } catch (error) {
+    return res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
+
+module.exports = { createPost, getPost, deletePost, updatePost };
