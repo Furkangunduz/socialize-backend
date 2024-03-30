@@ -31,4 +31,8 @@ router.put('/like-post', authenticate, validateRequest(getPostSchema), likePost)
 
 router.put('/unlike-post', authenticate, validateRequest(getPostSchema), unlikePost);
 
+router.post('/add-comment', authenticate, validateRequest(addCommentSchema), addComment);
+
+router.delete('/delete-comment', authenticate, validateRequest(deleteCommentSchema), deleteComment);
+
 module.exports = router;

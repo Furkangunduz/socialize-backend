@@ -1,6 +1,7 @@
 const { ApiError } = require('../helpers/ApiError');
 const { ApiResponse } = require('../helpers/ApiResponse');
 const { asyncHandler } = require('../helpers/asyncHandler');
+const { Comment } = require('../models/comment.model');
 const { Post } = require('../models/post.model');
 const { createFileUrl } = require('../utils/index');
 
@@ -206,4 +207,52 @@ const unlikePost = asyncHandler(async function (req, res) {
   }
 });
 
-module.exports = { createPost, getPost, getAllMyPosts, deletePost, updatePost, likePost, unlikePost };
+/**
+ * @route POST /posts/add-comment
+ *
+ * @param {String} req.body.postId - The ID of the post.
+ * @param {String} req.body.content - The content of the comment.
+ */
+
+const addComment = asyncHandler(async function (req, res) {
+  try {
+    const { postId, content } = req.body;
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json(new ApiError(404, null, 'Post not found'));
+    }
+
+    const newComment = new Comment({
+      user_id: req.userId,
+      post_id: postId,
+      content,
+    });
+    await newComment.save();
+
+    return res.status(201).json(new ApiResponse(201, newComment, 'Comment added successfully'));
+  } catch (error) {
+    return res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
+
+const deleteComment = asyncHandler(async function (req, res) {
+  try {
+    const { commentId } = req.body;
+
+    const comment = await Comment.findOne({ _id: commentId, user_id: req.userId });
+
+    if (!comment) {
+      return res.status(404).json(new ApiError(404, null, 'Comment not found'));
+    }
+
+    const deletedComment = await Comment.findByIdAndDelete(commentId, { new: true });
+
+    return res.status(200).json(new ApiResponse(200, deletedComment, 'Comment deleted successfully'));
+  } catch (error) {
+    return res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
+
+module.exports = { createPost, getPost, getAllMyPosts, deletePost, updatePost, likePost, unlikePost, addComment, deleteComment };
