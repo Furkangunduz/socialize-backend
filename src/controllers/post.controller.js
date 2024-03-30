@@ -61,16 +61,27 @@ const getPost = asyncHandler(async function (req, res) {
 /**
  * @route GET /posts/get-all-my-posts
  */
-
 const getAllMyPosts = asyncHandler(async function (req, res) {
+  const page = parseInt(req.query.page) || 1;
+  const itemsPerPage = parseInt(req.query.itemsPerPage) || ITEMS_PER_PAGE;
+
+  const skip = (page - 1) * itemsPerPage;
+
   try {
-    const posts = await Post.find({ user_id: req.userId });
+    let postsQuery = Post.find({ user_id: req.userId });
+
+    postsQuery = postsQuery.skip(skip).limit(itemsPerPage);
+
+    const posts = await postsQuery;
 
     if (posts.length === 0) {
       return res.status(404).json(new ApiError(404, null, 'Posts not found'));
     }
 
-    return res.status(200).json(new ApiResponse(200, posts, 'Posts found'));
+    const totalPosts = await Post.countDocuments({ user_id: req.userId });
+    const totalPages = Math.ceil(totalPosts / itemsPerPage);
+
+    return res.status(200).json(new ApiResponse(200, { data: posts, page, itemsPerPage, totalPosts, totalPages }, 'Posts found'));
   } catch (error) {
     return res.status(500).json(new ApiError(500, null, error.message));
   }
