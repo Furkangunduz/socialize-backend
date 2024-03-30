@@ -50,7 +50,7 @@ const getPost = asyncHandler(async function (req, res) {
       path: 'comments',
       populate: {
         path: 'user_id',
-        select: 'name avatar',
+        select: 'username avatar',
       },
       select: 'content createdAt',
     });
@@ -189,13 +189,12 @@ const likePost = asyncHandler(async function (req, res) {
     const likedPost = await Post.findOneAndUpdate(
       {
         _id: postId,
-        likes: { $ne: req.userId },
       },
       {
         $addToSet: { likes: req.userId },
       },
       { new: true }
-    ).populate('user', 'username avatar');
+    ).populate('user_id', 'username avatar');
 
     if (!likedPost) {
       return res.status(404).json(new ApiError(404, null, 'Post not found'));
@@ -218,13 +217,12 @@ const unlikePost = asyncHandler(async function (req, res) {
     const unlikedPost = await Post.findOneAndUpdate(
       {
         _id: postId,
-        likes: req.userId,
       },
       {
         $pull: { likes: req.userId },
       },
       { new: true }
-    ).populate('user', 'username avatar');
+    ).populate('user_id', 'username avatar');
 
     if (!unlikedPost) {
       return res.status(404).json(new ApiError(404, null, 'Post not found'));
