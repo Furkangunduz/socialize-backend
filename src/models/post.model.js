@@ -5,6 +5,7 @@ const PostSchema = new Schema(
     user_id: {
       type: Schema.Types.ObjectId,
       required: true,
+      ref: 'User',
     },
     content: {
       type: String,
@@ -16,6 +17,7 @@ const PostSchema = new Schema(
     likes: {
       type: [Schema.Types.ObjectId],
       default: [],
+      ref: 'User',
     },
     view_count: {
       type: Number,
