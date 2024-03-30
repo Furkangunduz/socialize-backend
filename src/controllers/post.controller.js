@@ -70,7 +70,10 @@ const getAllMyPosts = asyncHandler(async function (req, res) {
   try {
     let postsQuery = Post.find({ user_id: req.userId });
 
-    postsQuery = postsQuery.skip(skip).limit(itemsPerPage);
+    postsQuery = postsQuery
+      .skip(skip)
+      .limit(itemsPerPage)
+      .populate({ path: 'comments', options: { limit: 3, sort: { createdAt: -1 } } });
 
     const posts = await postsQuery;
 
