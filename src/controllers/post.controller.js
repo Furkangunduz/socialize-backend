@@ -58,6 +58,24 @@ const getPost = asyncHandler(async function (req, res) {
 });
 
 /**
+ * @route GET /posts/get-all-my-posts
+ */
+
+const getAllMyPosts = asyncHandler(async function (req, res) {
+  try {
+    const posts = await Post.find({ user_id: req.userId });
+
+    if (posts.length === 0) {
+      return res.status(404).json(new ApiError(404, null, 'Posts not found'));
+    }
+
+    return res.status(200).json(new ApiResponse(200, posts, 'Posts found'));
+  } catch (error) {
+    return res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
+
+/**
  * @route DELETE /posts/delete-post
  *
  * @param {String} req.body.postId - The ID of the post.
@@ -188,4 +206,4 @@ const unlikePost = asyncHandler(async function (req, res) {
   }
 });
 
-module.exports = { createPost, getPost, deletePost, updatePost, likePost, unlikePost };
+module.exports = { createPost, getPost, getAllMyPosts, deletePost, updatePost, likePost, unlikePost };
