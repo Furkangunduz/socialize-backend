@@ -46,13 +46,28 @@ const getPost = asyncHandler(async function (req, res) {
   try {
     const { postId } = req.query;
 
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate({
+      path: 'comments',
+      populate: {
+        path: 'user_id',
+        select: 'name avatar',
+      },
+      select: 'content createdAt',
+    });
 
     if (!post) {
       return res.status(404).json(new ApiError(404, null, 'Post not found'));
     }
 
-    return res.status(200).json(new ApiResponse(200, post, 'Post found'));
+    const transformedPost = post.toObject();
+    transformedPost.comments = transformedPost.comments.map((comment) => ({
+      id: comment._id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      user: comment.user_id,
+    }));
+
+    return res.status(200).json(new ApiResponse(200, transformedPost, 'Post found'));
   } catch (error) {
     return res.status(500).json(new ApiError(500, null, error.message));
   }
