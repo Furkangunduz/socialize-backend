@@ -23,7 +23,7 @@ const createPost = asyncHandler(async function (req, res) {
       fileUrlsArray = files.map((file) => createFileUrl(req, file.filename));
     }
     const newPost = new Post({
-      user_id: req.userId,
+      user: req.userId,
       content,
       files: fileUrlsArray,
       is_public,
@@ -49,7 +49,7 @@ const getPost = asyncHandler(async function (req, res) {
     const post = await Post.findById(postId).populate({
       path: 'comments',
       populate: {
-        path: 'user_id',
+        path: 'user',
         select: 'username avatar',
       },
       select: 'content createdAt',
@@ -58,14 +58,6 @@ const getPost = asyncHandler(async function (req, res) {
     if (!post) {
       return res.status(404).json(new ApiError(404, null, 'Post not found'));
     }
-
-    const transformedPost = post.toObject();
-    transformedPost.comments = transformedPost.comments.map((comment) => ({
-      id: comment._id,
-      content: comment.content,
-      createdAt: comment.createdAt,
-      user: comment.user_id,
-    }));
 
     return res.status(200).json(new ApiResponse(200, transformedPost, 'Post found'));
   } catch (error) {
@@ -83,7 +75,7 @@ const getAllMyPosts = asyncHandler(async function (req, res) {
   const skip = (page - 1) * itemsPerPage;
 
   try {
-    let postsQuery = Post.find({ user_id: req.userId });
+    let postsQuery = Post.find({ user: req.userId });
 
     postsQuery = postsQuery
       .skip(skip)
@@ -96,7 +88,7 @@ const getAllMyPosts = asyncHandler(async function (req, res) {
       return res.status(404).json(new ApiError(404, null, 'Posts not found'));
     }
 
-    const totalPosts = await Post.countDocuments({ user_id: req.userId });
+    const totalPosts = await Post.countDocuments({ user: req.userId });
     const totalPages = Math.ceil(totalPosts / itemsPerPage);
 
     return res.status(200).json(new ApiResponse(200, { data: posts, page, itemsPerPage, totalPosts, totalPages }, 'Posts found'));
@@ -114,7 +106,7 @@ const deletePost = asyncHandler(async function (req, res) {
   try {
     const { postId } = req.body;
 
-    const post = await Post.findOne({ _id: postId, user_id: req.userId });
+    const post = await Post.findOne({ _id: postId, user: req.userId });
 
     if (!post) {
       return res.status(404).json(new ApiError(404, null, 'Post not found'));
@@ -142,7 +134,7 @@ const updatePost = asyncHandler(async function (req, res) {
     const { postId, content, is_public } = req.body;
     const files = req.files;
 
-    const post = await Post.findOne({ _id: postId, user_id: req.userId });
+    const post = await Post.findOne({ _id: postId, user: req.userId });
 
     if (!post) {
       return res.status(404).json(new ApiError(404, null, 'Post not found'));
@@ -194,7 +186,7 @@ const likePost = asyncHandler(async function (req, res) {
         $addToSet: { likes: req.userId },
       },
       { new: true }
-    ).populate('user_id', 'username avatar');
+    ).populate('user', 'username avatar');
 
     if (!likedPost) {
       return res.status(404).json(new ApiError(404, null, 'Post not found'));
@@ -222,7 +214,7 @@ const unlikePost = asyncHandler(async function (req, res) {
         $pull: { likes: req.userId },
       },
       { new: true }
-    ).populate('user_id', 'username avatar');
+    ).populate('user', 'username avatar');
 
     if (!unlikedPost) {
       return res.status(404).json(new ApiError(404, null, 'Post not found'));
@@ -252,7 +244,7 @@ const addComment = asyncHandler(async function (req, res) {
     }
 
     const newComment = new Comment({
-      user_id: req.userId,
+      user: req.userId,
       post_id: postId,
       content,
     });
@@ -275,7 +267,7 @@ const deleteComment = asyncHandler(async function (req, res) {
   try {
     const { commentId } = req.body;
 
-    const comment = await Comment.findOne({ _id: commentId, user_id: req.userId });
+    const comment = await Comment.findOne({ _id: commentId, user: req.userId });
 
     if (!comment) {
       return res.status(404).json(new ApiError(404, null, 'Comment not found'));
