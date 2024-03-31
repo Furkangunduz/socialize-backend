@@ -14,6 +14,7 @@ const {
   addComment,
   deleteComment,
   verifyPost,
+  getFeed,
 } = require('../controllers/post.controller.js');
 const { checkRole } = require('../middlewares/checkRole.middleware.js');
 const { roles } = require('../helpers/roles.helper.js');
@@ -39,5 +40,7 @@ router.post('/add-comment', authenticate, validateRequest(addCommentSchema), add
 router.delete('/delete-comment', authenticate, validateRequest(deleteCommentSchema), deleteComment);
 
 router.put('/verify-post', authenticate, validateRequest(verifyPostSchema), checkRole([roles.admin, roles.mod]), verifyPost);
+
+router.get('/feed', authenticate, getFeed);
 
 module.exports = router;

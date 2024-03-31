@@ -4,6 +4,7 @@ const { asyncHandler } = require('../helpers/asyncHandler');
 const { Comment } = require('../models/comment.model');
 const { Post } = require('../models/post.model');
 const { createFileUrl } = require('../utils/index');
+const { ITEMS_PER_PAGE } = require('../constants');
 
 /**
  * @route POST /posts/create-post
@@ -305,4 +306,45 @@ const verifyPost = asyncHandler(async function (req, res) {
   }
 });
 
-module.exports = { createPost, getPost, getAllMyPosts, deletePost, updatePost, likePost, unlikePost, addComment, deleteComment, verifyPost };
+const getFeed = asyncHandler(async function (req, res) {
+  const page = parseInt(req.query.page) || 1;
+  const itemsPerPage = parseInt(req.query.itemsPerPage) || ITEMS_PER_PAGE;
+
+  const skip = (page - 1) * itemsPerPage;
+
+  try {
+    let postsQuery = Post.find({ is_public: true, is_pending: false });
+
+    postsQuery = postsQuery
+      .skip(skip)
+      .limit(itemsPerPage)
+      .populate({ path: 'comments', options: { limit: 3, sort: { createdAt: -1 } } });
+
+    const posts = await postsQuery;
+
+    if (posts.length === 0) {
+      return res.status(404).json(new ApiError(404, null, 'Posts not found'));
+    }
+
+    const totalPosts = await Post.countDocuments({ is_public: true, is_pending: false });
+    const totalPages = Math.ceil(totalPosts / itemsPerPage);
+
+    return res.status(200).json(new ApiResponse(200, { data: posts, page, itemsPerPage, totalPosts, totalPages }, 'Posts found'));
+  } catch (error) {
+    return res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
+
+module.exports = {
+  createPost,
+  getPost,
+  getAllMyPosts,
+  deletePost,
+  updatePost,
+  likePost,
+  unlikePost,
+  addComment,
+  deleteComment,
+  verifyPost,
+  getFeed,
+};
