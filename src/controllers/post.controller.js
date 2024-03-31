@@ -318,6 +318,7 @@ const getFeed = asyncHandler(async function (req, res) {
     postsQuery = postsQuery
       .skip(skip)
       .limit(itemsPerPage)
+      .populate('user', 'username avatar')
       .populate({ path: 'comments', options: { limit: 3, sort: { createdAt: -1 } } });
 
     const posts = await postsQuery;
