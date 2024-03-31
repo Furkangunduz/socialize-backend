@@ -59,7 +59,7 @@ const getPost = asyncHandler(async function (req, res) {
       return res.status(404).json(new ApiError(404, null, 'Post not found'));
     }
 
-    return res.status(200).json(new ApiResponse(200, transformedPost, 'Post found'));
+    return res.status(200).json(new ApiResponse(200, post, 'Post found'));
   } catch (error) {
     return res.status(500).json(new ApiError(500, null, error.message));
   }
@@ -281,4 +281,28 @@ const deleteComment = asyncHandler(async function (req, res) {
   }
 });
 
-module.exports = { createPost, getPost, getAllMyPosts, deletePost, updatePost, likePost, unlikePost, addComment, deleteComment };
+/**
+ * @route PUT /posts/verify-post
+ * @param {String} req.body.postId - The ID of the post.
+ * @access Admin, Mod
+ */
+
+const verifyPost = asyncHandler(async function (req, res) {
+  try {
+    const { postId } = req.body;
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json(new ApiError(404, null, 'Post not found'));
+    }
+
+    const verifiedPost = await Post.findByIdAndUpdate(postId, { is_pending: false }, { new: true });
+
+    return res.status(200).json(new ApiResponse(200, verifiedPost, 'Post verified successfully'));
+  } catch (error) {
+    return res.status(500).json(new ApiError(500, null, error.message));
+  }
+});
+
+module.exports = { createPost, getPost, getAllMyPosts, deletePost, updatePost, likePost, unlikePost, addComment, deleteComment, verifyPost };
