@@ -13,9 +13,11 @@ const { RelationShip } = require('../models/relationShip');
     await connectDB();
 
     await User.deleteMany({});
+    await Post.deleteMany({});
+    await RelationShip.deleteMany({});
 
     console.log('Seeding admin...');
-    const hashedPassword = await bcrypt.hash('123123', 10);
+    const hashedPassword = await bcrypt.hash('123123*fF', 10);
     await User.create({
       email: 'admin@admin.com',
       username: 'admin',
@@ -82,8 +84,8 @@ const { RelationShip } = require('../models/relationShip');
       const friend = createdUsers[friendIndex];
 
       await RelationShip.create({
-        user: user._id,
-        friend: friend._id,
+        follower: user._id,
+        following: friend._id,
       });
 
       await User.findByIdAndUpdate(user._id, { $addToSet: { following: friend._id } });
