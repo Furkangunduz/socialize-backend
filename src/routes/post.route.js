@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { authenticate } = require('../middlewares/authenticateUser.middleware.js');
 const { validateRequest } = require('../middlewares/validateRequest.middleware.js');
-const { createPostSchema, getPostSchema, deletePostSchema, updatePostSchema } = require('../schemas/post.schema.js');
+const { createPostSchema, getPostSchema, deletePostSchema, updatePostSchema, verifyPostSchema } = require('../schemas/post.schema.js');
 const { addCommentSchema, deleteCommentSchema } = require('../schemas/comment.schema.js');
 const {
   createPost,
@@ -13,7 +13,10 @@ const {
   unlikePost,
   addComment,
   deleteComment,
+  verifyPost,
 } = require('../controllers/post.controller.js');
+const { checkRole } = require('../middlewares/checkRole.middleware.js');
+const { roles } = require('../helpers/roles.helper.js');
 
 const router = Router();
 
@@ -34,5 +37,7 @@ router.put('/unlike-post', authenticate, validateRequest(getPostSchema), unlikeP
 router.post('/add-comment', authenticate, validateRequest(addCommentSchema), addComment);
 
 router.delete('/delete-comment', authenticate, validateRequest(deleteCommentSchema), deleteComment);
+
+router.put('/verify-post', authenticate, validateRequest(verifyPostSchema), checkRole([roles.admin, roles.mod]), verifyPost);
 
 module.exports = router;

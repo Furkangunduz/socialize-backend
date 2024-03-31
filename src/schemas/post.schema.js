@@ -21,4 +21,8 @@ const updatePostSchema = joi.object({
   is_public: joi.boolean(),
 });
 
-module.exports = { createPostSchema, getPostSchema, deletePostSchema, updatePostSchema };
+const verifyPostSchema = joi.object({
+  postId: joi.string().required(),
+});
+
+module.exports = { createPostSchema, getPostSchema, deletePostSchema, updatePostSchema, verifyPostSchema };
